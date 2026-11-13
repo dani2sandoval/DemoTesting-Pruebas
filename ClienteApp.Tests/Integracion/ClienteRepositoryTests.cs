@@ -71,6 +71,19 @@ public class ClienteRepositoryTests : IDisposable
             excepcion.Message);
     }
 
+    [Fact]
+    public void ObtenerPorId_IdInexistente_DebeRetornarNull()
+    {
+        // Arrange: utilizar el servicio y el repositorio SQLite reales.
+        var service = new ClienteService(_repository);
+        const int idInexistente = int.MaxValue;
+
+        // Act
+        var resultado = service.ObtenerPorId(idInexistente);
+
+        // Assert
+        Assert.Null(resultado);
+    }
 
     public void Dispose()
     {

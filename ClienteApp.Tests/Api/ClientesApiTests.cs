@@ -64,6 +64,55 @@ public class ClientesApiTests
             response.StatusCode);
     }
 
+    [Fact]
+    public async Task ObtenerPorId_ClienteExistente_DebeRetornar200()
+    {
+        // Arrange: registrar un cliente en la base temporal de la API.
+        using var factory = new ClienteApiFactory();
+        using var client = factory.CreateClient();
+
+        var solicitud = new
+        {
+            Nombre = "Ana López",
+            Correo = $"ana_{Guid.NewGuid():N}@example.com"
+        };
+
+        var registroResponse = await client.PostAsJsonAsync(
+            "/api/Clientes",
+            solicitud);
+
+        Assert.Equal(
+            HttpStatusCode.Created,
+            registroResponse.StatusCode);
+
+        var clienteRegistrado = await registroResponse.Content
+            .ReadFromJsonAsync<ClienteRespuesta>();
+
+        Assert.NotNull(clienteRegistrado);
+
+        // Act
+        var response = await client.GetAsync(
+            $"/api/Clientes/{clienteRegistrado.Id}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task ObtenerPorId_ClienteInexistente_DebeRetornar404()
+    {
+        // Arrange
+        using var factory = new ClienteApiFactory();
+        using var client = factory.CreateClient();
+
+        // Act
+        var response = await client.GetAsync(
+            $"/api/Clientes/{int.MaxValue}");
+
+        // Assert
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
     private sealed record ClienteRespuesta(
         int Id,
         string Nombre,
